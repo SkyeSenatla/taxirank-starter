@@ -12,4 +12,5 @@ enum QueueStatus {
   /// Maps the server's string to a status.
   static QueueStatus fromWire(String value) =>
       QueueStatus.values.byName(value.toLowerCase());
+      
 }

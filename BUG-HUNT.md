@@ -10,9 +10,9 @@ final double fare = 18.50;
 Text('R ${(fare * passengers).toStringAsFixed(2)}');
 ```
 
-What breaks:
+What breaks: The value is rounded off which will eventually create inconsistency when counting the money
 
-The fix:
+The fix: Text('R ${(fare * passengers).toString()}');
 
 ## 2
 
@@ -22,9 +22,9 @@ enum QueueStatus { waiting, loading, full }
 QueueStatus parse(String wire) => QueueStatus.values.byName(wire.toLowerCase());
 ```
 
-What breaks:
+What breaks: By the look of it the only argument we need is "String wire"  but in the return we use "values'
 
-The fix:
+The fix: QueueStatus parse(String wire) => QueueStatus.wire.byName(wire.toLowerCase());
 
 ## 3
 
@@ -96,9 +96,9 @@ CircleAvatar(
 ),
 ```
 
-What breaks:
+What breaks: taxi.status might not return same value as QueueStatus therefore the Color of CircleAvatar might always be false and will be  const Color(0xFF9E9E9E)
 
-The fix:
+The fix: we need to make sure the values inside  taxi.status have same enum values
 
 ## 8
 
@@ -108,6 +108,6 @@ The fix:
         run: flutter analyze
 ```
 
-What breaks:
+What breaks: flutter analyse is provided by flutter 
 
-The fix:
+The fix: in pour situation we need to use riverpod_lint commands
