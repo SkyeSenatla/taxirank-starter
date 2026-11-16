@@ -10,9 +10,9 @@ final double fare = 18.50;
 Text('R ${(fare * passengers).toStringAsFixed(2)}');
 ```
 
-What breaks:
+What breaks: A `double` fare and multiplication can round by a cent; passengers see an incorrect charge.
 
-The fix:
+The fix: Store cents as integer `Cents` and format the server-supplied money with `formatRands`.
 
 ## 2
 
@@ -22,9 +22,9 @@ enum QueueStatus { waiting, loading, full }
 QueueStatus parse(String wire) => QueueStatus.values.byName(wire.toLowerCase());
 ```
 
-What breaks:
+What breaks: An unknown wire status such as `OffDuty` throws and hides Alexandra's entire queue; lowercasing also breaks the exact contract.
 
-The fix:
+The fix: Switch on exact `Waiting`, `Loading`, `Full` values and map everything else to an explicit unknown status.
 
 ## 3
 
@@ -36,9 +36,9 @@ String label(QueueStatus s) => switch (s) {
 };
 ```
 
-What breaks:
+What breaks: The wildcard mislabels an unknown/off-duty taxi as waiting, misleading the marshal.
 
-The fix:
+The fix: List every enum status explicitly and show `Status not recognised` for unknown.
 
 ## 4
 
@@ -53,9 +53,9 @@ class CurrentQueue extends _$CurrentQueue {
 }
 ```
 
-What breaks:
+What breaks: A singleton state shared across routes can briefly display Soweto taxis on Alexandra's screen.
 
-The fix:
+The fix: Use a Riverpod family keyed by `routeId`; route-specific data must not share mutable state.
 
 ## 5
 
@@ -70,9 +70,9 @@ testWidgets('a failed load shows Try again', (tester) async {
 });
 ```
 
-What breaks:
+What breaks: This simplified widget test bypasses the real router, retries and app wiring, giving false confidence.
 
-The fix:
+The fix: Use the provided `pumpTaxiRank` harness and check actual route URLs, failures and retries.
 
 ## 6
 
@@ -82,9 +82,9 @@ onTap: () => Navigator.of(context).push(
 ),
 ```
 
-What breaks:
+What breaks: Passing a taxi object to a page cannot restore it after the app opens from a direct address.
 
-The fix:
+The fix: Use typed `/queues/:routeId/taxis/:taxiId` navigation and fetch the taxi using only those IDs.
 
 ## 7
 
@@ -96,9 +96,9 @@ CircleAvatar(
 ),
 ```
 
-What breaks:
+What breaks: A feature-level colour does not adapt to dark mode and may have poor contrast.
 
-The fix:
+The fix: Use light/dark semantic colours from a `ThemeExtension`, always paired with a status label.
 
 ## 8
 
@@ -108,6 +108,6 @@ The fix:
         run: flutter analyze
 ```
 
-What breaks:
+What breaks: The CI analyzer command can miss the Riverpod plugin lint, so a broken lint may pass unnoticed.
 
-The fix:
+The fix: Use `dart analyze --fatal-infos` in CI; repair rather than suppress diagnostics.

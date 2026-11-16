@@ -1,37 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// The two tabs at the bottom of the screen.
+/// Queues and Departures keep independent navigation stacks.
 class AppShell extends StatelessWidget {
-  /// Creates the shell around [navigationShell].
-  const new({required this.navigationShell, super.key});
+  /// Creates the shell around the stateful navigator.
+  const AppShell({required this.navigationShell, super.key});
 
-  /// go_router's shell: one navigator per tab.
+  /// The shell supplied by go_router.
   final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.format_list_numbered_outlined),
-            selectedIcon: Icon(Icons.format_list_numbered),
-            label: 'Queues',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.departure_board_outlined),
-            selectedIcon: Icon(Icons.departure_board),
-            label: 'Departures',
-          ),
-        ],
+    final isWide = MediaQuery.sizeOf(context).width >= 600;
+    void select(int index) => navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
+    const bottomDestinations = <NavigationDestination>[
+      NavigationDestination(
+        icon: Icon(Icons.format_list_numbered_outlined),
+        selectedIcon: Icon(Icons.format_list_numbered),
+        label: 'Queues',
       ),
+      NavigationDestination(
+        icon: Icon(Icons.departure_board_outlined),
+        selectedIcon: Icon(Icons.departure_board),
+        label: 'Departures',
+      ),
+    ];
+    return Scaffold(
+      body: isWide
+          ? Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: navigationShell.currentIndex,
+                  onDestinationSelected: select,
+                  labelType: NavigationRailLabelType.all,
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.format_list_numbered_outlined),
+                      selectedIcon: Icon(Icons.format_list_numbered),
+                      label: Text('Queues'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.departure_board_outlined),
+                      selectedIcon: Icon(Icons.departure_board),
+                      label: Text('Departures'),
+                    ),
+                  ],
+                ),
+                Expanded(child: navigationShell),
+              ],
+            )
+          : navigationShell,
+      bottomNavigationBar: isWide
+          ? null
+          : NavigationBar(
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected: select,
+              destinations: bottomDestinations,
+            ),
     );
   }
 }

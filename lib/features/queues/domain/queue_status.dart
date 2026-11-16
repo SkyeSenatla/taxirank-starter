@@ -1,15 +1,30 @@
-/// Where a taxi is in the queue, as the rank server spells it.
+/// A known queue status, or a future status the server has introduced.
 enum QueueStatus {
-  /// In the queue, not taking passengers yet.
+  /// Waiting for its turn.
   waiting,
 
-  /// At the front, taking passengers.
+  /// Boarding passengers.
   loading,
 
-  /// Every seat taken: ready to depart.
-  full;
+  /// Ready to depart.
+  full,
 
-  /// Maps the server's string to a status.
-  static QueueStatus fromWire(String value) =>
-      QueueStatus.values.byName(value.toLowerCase());
+  /// A status this version of the app does not yet recognise.
+  unknown;
+
+  /// Server values are case-sensitive: do not silently accept `loading`.
+  static QueueStatus fromWire(String value) => switch (value) {
+    'Waiting' => QueueStatus.waiting,
+    'Loading' => QueueStatus.loading,
+    'Full' => QueueStatus.full,
+    _ => QueueStatus.unknown,
+  };
+
+  /// Every status has a visible, accessible text label.
+  String get label => switch (this) {
+    QueueStatus.waiting => 'Waiting',
+    QueueStatus.loading => 'Loading',
+    QueueStatus.full => 'Full',
+    QueueStatus.unknown => 'Status not recognised',
+  };
 }
