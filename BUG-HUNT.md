@@ -10,9 +10,9 @@ final double fare = 18.50;
 Text('R ${(fare * passengers).toStringAsFixed(2)}');
 ```
 
-What breaks:
+What breaks: Using double for money can introduce rounding errors, affecting fare totals shown to the marshal.
 
-The fix:
+The fix: Use the Cents value type and formatRands(). Display server-provided totals instead of recalculating them.
 
 ## 2
 
@@ -22,9 +22,9 @@ enum QueueStatus { waiting, loading, full }
 QueueStatus parse(String wire) => QueueStatus.values.byName(wire.toLowerCase());
 ```
 
-What breaks:
+What breaks: byName() throws because delayed is not a declared enum value. The route may fail to render for the marshal.
 
-The fix:
+The fix: Add an unknown enum case and explicitly map the server's exact strings (Waiting, Loading, Full), returning unknown for anything else.
 
 ## 3
 
@@ -36,9 +36,9 @@ String label(QueueStatus s) => switch (s) {
 };
 ```
 
-What breaks:
+What breaks: The wildcard maps unknown statuses to "Waiting", misleading the rank marshal.
 
-The fix:
+The fix: Remove the wildcard and use an exhaustive switch that explicitly handles every QueueStatus value.
 
 ## 4
 
@@ -53,9 +53,9 @@ class CurrentQueue extends _$CurrentQueue {
 }
 ```
 
-What breaks:
+What breaks: A single shared provider allows one route's taxis to appear on another route's screen, misleading the marshal.
 
-The fix:
+The fix: Use a Riverpod family keyed by routeId so each route has independent state and cannot overwrite another.
 
 ## 5
 
@@ -70,9 +70,9 @@ testWidgets('a failed load shows Try again', (tester) async {
 });
 ```
 
-What breaks:
+What breaks: The test bypasses the real app setup and only checks that "Try again" appears, not that retry works.
 
-The fix:
+The fix: Use pumpTaxiRank() with a failing server, tap "Try again", and verify that the queue loads.
 
 ## 6
 
@@ -82,9 +82,10 @@ onTap: () => Navigator.of(context).push(
 ),
 ```
 
-What breaks:
+What breaks: Navigator.push() requires an existing taxi object and does not provide a deep-linkable address for the taxi.
 
-The fix:
+The fix: Use a typed GoRouter route with routeId and taxiId. Fetch taxi details using those IDs instead of passing
+the entire taxi object.
 
 ## 7
 
@@ -96,9 +97,9 @@ CircleAvatar(
 ),
 ```
 
-What breaks:
+What breaks: Hardcoded status colours do not adapt to dark mode and may be inconsistent or inaccessible to marshals.
 
-The fix:
+The fix: Use a ThemeExtension with light and dark status colours, and display each status in words.
 
 ## 8
 
@@ -108,6 +109,6 @@ The fix:
         run: flutter analyze
 ```
 
-What breaks:
+What breaks: CI uses flutter analyze, which misses the configured Riverpod lint violations, allowing broken code to pass.
 
-The fix:
+The fix: Use dart analyze --fatal-infos in CI and fix the reported Riverpod lint violations without suppressing them.

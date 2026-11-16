@@ -6,34 +6,39 @@ part 'selected_queue_controller.g.dart';
 
 /// The queue on screen. One for the whole app, loaded by whichever queue
 /// screen opens.
-@Riverpod(keepAlive: true)
+///
+/// Each route now has its own independent queue state.
+@riverpod
 class SelectedQueue extends _$SelectedQueue {
-  /// The route that's on screen.
-  String? routeId;
-
   @override
-  Future<RouteQueue?> build() async => null;
+  Future<RouteQueue> build(String routeId) async {
+    return await ref.read(queueRepositoryProvider).fetchQueue(routeId);
+  }
 
-  /// Loads [id]'s queue.
-  Future<void> load(String id) async {
-    routeId = id;
-    final queue = await ref.read(queueRepositoryProvider).fetchQueue(id);
-    state = AsyncData(queue);
+  /// Loads the current route's queue again.
+  Future<void> retry() async {
+    state = const AsyncLoading();
+
+    state = await AsyncValue.guard(
+      () => ref.read(queueRepositoryProvider).fetchQueue(routeId),
+    );
   }
 
   /// One passenger boards [taxiId].
   Future<void> board(String taxiId) async {
-    final queue = state.value!;
+    final queue = state.requireValue;
+
     final updated = await ref
         .read(queueRepositoryProvider)
         .board(queue.routeId, taxiId);
+
     state = AsyncData(
       queue.copyWith(
         taxis: [
           for (final taxi in queue.taxis)
             if (taxi.id == taxiId)
-              // Count the fare straight away, so the marshal sees it.
-              updated.copyWith(collected: updated.collected + queue.fare)
+              // The server has already counted the fare.
+              updated
             else
               taxi,
         ],

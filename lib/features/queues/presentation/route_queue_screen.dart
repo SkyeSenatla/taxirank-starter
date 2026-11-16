@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taxirank/core/money/format_rands.dart';
+import 'package:taxirank/features/queues/domain/queue_action.dart';
 import 'package:taxirank/features/queues/domain/queue_status.dart';
 import 'package:taxirank/features/queues/domain/route_queue.dart';
 import 'package:taxirank/features/queues/presentation/selected_queue_controller.dart';
@@ -21,25 +20,27 @@ class RouteQueueScreen extends ConsumerStatefulWidget {
 
 class _RouteQueueScreenState extends ConsumerState<RouteQueueScreen> {
   @override
-  void initState() {
-    super.initState();
-    unawaited(
-      Future.microtask(
-        () => ref.read(selectedQueueProvider.notifier).load(widget.routeId),
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final queue = ref.watch(selectedQueueProvider);
+    final queue = ref.watch(selectedQueueProvider(widget.routeId));
     return Scaffold(
       appBar: AppBar(title: Text(queue.value?.routeName ?? 'Queue')),
       body: queue.when(
-        data: (q) => q == null
-            ? const Center(child: CircularProgressIndicator())
-            : _QueueList(queue: q),
-        error: (e, _) => Center(child: Text('$e')),
+        data: (q) => _QueueList(queue: q, routeId: widget.routeId),
+        error: (e, _) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Could not load this queue.'),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () => ref
+                    .read(selectedQueueProvider(widget.routeId).notifier)
+                    .retry(),
+                child: const Text('Try again'),
+              ),
+            ],
+          ),
+        ),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );
@@ -47,9 +48,10 @@ class _RouteQueueScreenState extends ConsumerState<RouteQueueScreen> {
 }
 
 class _QueueList extends ConsumerWidget {
-  const new({required this.queue});
+  const new({required this.queue, required this.routeId});
 
   final RouteQueue queue;
+  final String routeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,7 +62,7 @@ class _QueueList extends ConsumerWidget {
           Card(
             child: ListTile(
               leading: CircleAvatar(
-                backgroundColor: _colour(taxi.status),
+                backgroundColor: _colour(context, taxi.status),
                 child: Text('${taxi.position}'),
               ),
               title: Text(taxi.registration),
@@ -69,10 +71,15 @@ class _QueueList extends ConsumerWidget {
                 '${taxi.seatsTaken} of ${queue.capacity} seats · '
                 '${formatRands(taxi.collected)}',
               ),
-              trailing: taxi.status == QueueStatus.loading
+              trailing:
+                  allowedAction(
+                        taxi.status,
+                        hasFreeSeat: taxi.seatsTaken < queue.capacity,
+                      ) ==
+                      QueueAction.board
                   ? FilledButton(
                       onPressed: () => ref
-                          .read(selectedQueueProvider.notifier)
+                          .read(selectedQueueProvider(routeId).notifier)
                           .board(taxi.id),
                       child: const Text('Board passenger'),
                     )
@@ -83,8 +90,14 @@ class _QueueList extends ConsumerWidget {
     );
   }
 
-  Color _colour(QueueStatus status) => switch (status) {
-    QueueStatus.loading => const Color(0xFF2E7D32),
-    _ => const Color(0xFF9E9E9E),
-  };
+  Color _colour(BuildContext context, QueueStatus status) {
+    final colors = Theme.of(context).colorScheme;
+
+    return switch (status) {
+      QueueStatus.loading => colors.primary,
+      QueueStatus.waiting => colors.secondary,
+      QueueStatus.full => colors.tertiary,
+      QueueStatus.unknown => colors.outline,
+    };
+  }
 }
