@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taxirank/app/theme/status_colors.dart';
 
 /// TaxiRank's look: one seed colour, light and dark.
 abstract final class AppTheme {
@@ -13,5 +14,12 @@ abstract final class AppTheme {
 
   static ThemeData _build(Brightness brightness) => ThemeData(
     colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: brightness),
+    // CHANGED: each theme carries its own status colours.
+    extensions: [
+      if (brightness == Brightness.light)
+        StatusColors.light
+      else
+        StatusColors.dark,
+    ],
   );
 }
