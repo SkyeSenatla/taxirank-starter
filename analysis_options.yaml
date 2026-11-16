@@ -1,0 +1,15 @@
+# Week 10 Day 1: a strict, shared rule set. CI fails on any finding.
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  # Generated code is the generator's business, not the reviewer's.
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - build/**
+    - android/**
+    - ios/**
+
+# Week 10 Day 2: Riverpod's own rules, run by the analyser as a plugin.
+plugins:
+  riverpod_lint: 3.1.9
