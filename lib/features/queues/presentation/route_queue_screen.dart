@@ -36,6 +36,7 @@ class _RouteQueueScreenState extends ConsumerState<RouteQueueScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(queue.value?.routeName ?? 'Queue')),
       body: queue.when(
+        skipLoadingOnRefresh: false,
         data: (q) => q == null
             ? const Center(child: CircularProgressIndicator())
             : _QueueList(queue: q),
@@ -64,19 +65,33 @@ class _QueueList extends ConsumerWidget {
                 child: Text('${taxi.position}'),
               ),
               title: Text(taxi.registration),
-              subtitle: Text(
-                '${taxi.driverName} · '
-                '${taxi.seatsTaken} of ${queue.capacity} seats · '
-                '${formatRands(taxi.collected)}',
+              isThreeLine: true,
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(taxi.status.label),
+                  Text(
+                    '${taxi.driverName} · '
+                    '${taxi.seatsTaken} of ${queue.capacity} seats · '
+                    '${formatRands(taxi.collected)}',
+                  ),
+                ],
               ),
-              trailing: taxi.status == QueueStatus.loading
-                  ? FilledButton(
-                      onPressed: () => ref
-                          .read(selectedQueueProvider.notifier)
-                          .board(taxi.id),
-                      child: const Text('Board passenger'),
-                    )
-                  : null,
+              trailing: switch (taxi.status.action(
+                hasFreeSeat: taxi.seatsTaken < queue.capacity,
+              )) {
+                TaxiAction.board => FilledButton(
+                  onPressed: () =>
+                      ref.read(selectedQueueProvider.notifier).board(taxi.id),
+                  child: const Text('Board passenger'),
+                ),
+                TaxiAction.depart => FilledButton(
+                  onPressed: () =>
+                      ref.read(selectedQueueProvider.notifier).depart(taxi.id),
+                  child: const Text('Depart'),
+                ),
+                TaxiAction.none => null,
+              },
             ),
           ),
       ],

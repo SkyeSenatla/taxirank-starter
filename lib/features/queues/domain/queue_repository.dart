@@ -13,4 +13,6 @@ abstract interface class QueueRepository {
   /// One passenger boards [taxiId]. Returns the taxi as the server now has
   /// it.
   Future<QueuedTaxi> board(String routeId, String taxiId);
+
+  Future<void> depart(String routeId, String taxiId);
 }
