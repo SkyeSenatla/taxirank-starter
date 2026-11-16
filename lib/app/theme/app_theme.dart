@@ -14,4 +14,11 @@ abstract final class AppTheme {
   static ThemeData _build(Brightness brightness) => ThemeData(
     colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: brightness),
   );
+  
+    static ThemeData _build(Brightness brightness) => ThemeData(
+    colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: brightness),
+    extensions: [
+      if (brightness == Brightness.dark) StatusColors.dark else StatusColors.light,
+    ], 
+  );
 }

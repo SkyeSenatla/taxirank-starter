@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:taxirank/core/money/format_rands.dart';
+import 'package:taxirank/features/departures/domain/departure.dart';
+import 'package:taxirank/features/departures/presentation/departures_provider.dart';
 
 /// The Departures tab. Round 4 builds it.
 class DeparturesScreen extends StatelessWidget {

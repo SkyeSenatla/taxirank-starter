@@ -11,5 +11,17 @@ enum QueueStatus {
 
   /// Maps the server's string to a status.
   static QueueStatus fromWire(String value) =>
-      QueueStatus.values.byName(value.toLowerCase());
+      switch (value){
+        'Waiting' => QueueStatus.waiting,
+        'Loading' => QueueStatus.loading,
+        'Full' => QueueStatus.full,
+        _ => unknown;
+      };
+  
+  String get label => switch (this) {
+        QueueStatus.waiting => 'Waiting',
+        QueueStatus.loading => 'Loading',
+        QueueStatus.full => 'Full',
+        QueueStatus.Unknown => 'Unknown',
+      };
 }
