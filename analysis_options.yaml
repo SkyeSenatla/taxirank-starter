@@ -9,6 +9,7 @@ analyzer:
     - build/**
     - android/**
     - ios/**
+    - web/**
 
 # Week 10 Day 2: Riverpod's own rules, run by the analyser as a plugin.
 plugins:

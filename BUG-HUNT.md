@@ -10,9 +10,9 @@ final double fare = 18.50;
 Text('R ${(fare * passengers).toStringAsFixed(2)}');
 ```
 
-What breaks:
+What breaks: The total is claculated there which would be different to what the serverhas calculated.
 
-The fix:
+The fix: Use the amount the server returns in integer cents and display it with fare cents.
 
 ## 2
 
