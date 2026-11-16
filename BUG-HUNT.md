@@ -22,9 +22,9 @@ enum QueueStatus { waiting, loading, full }
 QueueStatus parse(String wire) => QueueStatus.values.byName(wire.toLowerCase());
 ```
 
-What breaks:
+What breaks: Making the case lower can allow for values outside the server to be accepted
 
-The fix:
+The fix: Making the strings be like in the enum and setting other values to unknown.
 
 ## 3
 
@@ -36,9 +36,9 @@ String label(QueueStatus s) => switch (s) {
 };
 ```
 
-What breaks:
+What breaks: An unknown status as is classified as Waiting.
 
-The fix:
+The fix: Give every enum a switch for also a growing list
 
 ## 4
 
