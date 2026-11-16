@@ -83,3 +83,29 @@ Errors (`lib/core/errors/rank_errors.dart`) are `RankNotFound` (404),
   it in your widget tests; your instructor's checks use it too.
 - Keep the name of `appRetryPolicy` in `lib/app/retry_policy.dart`.
 - Work on your own branch. Never push to `main`.
+
+## Week 10 Revision Challenge
+
+### Application overview
+TaxiRank is a Flutter application for viewing taxi routes and their queues.
+
+### Architecture
+The application separates presentation, domain and data responsibilities.
+Screens consume Riverpod providers. Queue state is scoped by route identifier.
+Taxi details are fetched using both route and taxi identifiers.
+
+### Queue behaviour
+Queue statuses use QueueStatus. Unknown server statuses are handled safely.
+Queue actions depend on taxi status and available seats.
+
+### Departures
+Departures have separate domain, repository and provider layers.
+
+### Development and verification
+Run from the project root:
+
+- `flutter pub get`
+- `dart run build_runner build`
+- `dart format --output=none --set-exit-if-changed .`
+- `dart analyze`
+- `flutter test .`

@@ -20,7 +20,7 @@ class RouteQueueScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final queue = ref.watch(selectedQueueProvider(routeId));
     return Scaffold(
-      appBar: AppBar(title: Text(queue.asData?.value?.routeName ?? 'Queue')),
+      appBar: AppBar(title: Text(queue.asData?.value.routeName ?? 'Queue')),
       body: queue.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => _QueueError(
@@ -83,7 +83,7 @@ class _QueueList extends ConsumerWidget {
             onTap: () => TaxiDetailRoute(
               routeId: queue.routeId,
               taxiId: taxi.id,
-            ).push(context),
+            ).push<void>(context),
             trailing: _action(
               ref,
               queue.routeId,
