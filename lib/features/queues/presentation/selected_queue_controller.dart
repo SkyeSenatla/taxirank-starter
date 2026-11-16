@@ -8,7 +8,6 @@ part 'selected_queue_controller.g.dart';
 /// screen opens.
 @Riverpod(keepAlive: true)
 class SelectedQueue extends _$SelectedQueue {
-  /// The route that's on screen.
   String? routeId;
 
   @override
@@ -32,12 +31,25 @@ class SelectedQueue extends _$SelectedQueue {
         taxis: [
           for (final taxi in queue.taxis)
             if (taxi.id == taxiId)
-              // Count the fare straight away, so the marshal sees it.
               updated.copyWith(collected: updated.collected + queue.fare)
             else
               taxi,
         ],
       ),
     );
+  }
+
+  /// Sends a full taxi off and refreshes its queue from the server.
+  Future<void> depart(String taxiId) async {
+    final queue = state.value;
+    if (state.isLoading || queue == null || queue.routeId != routeId) return;
+
+    final repository = ref.read(queueRepositoryProvider);
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(() async {
+      await repository.depart(queue.routeId, taxiId);
+      return repository.fetchQueue(queue.routeId);
+    });
+    if (routeId == queue.routeId) state = result;
   }
 }
