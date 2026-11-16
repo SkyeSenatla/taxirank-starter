@@ -9,6 +9,14 @@ enum QueueStatus {
   /// Every seat taken: ready to depart.
   full;
 
+  /* 
+  String label(QueueStatus status) => switch (status) {
+  status.loading => 'Loading',
+  status.full => 'Full',
+  _ => 'Waiting';
+};
+  */
+
   /// Maps the server's string to a status.
   static QueueStatus fromWire(String value) =>
       QueueStatus.values.byName(value.toLowerCase());

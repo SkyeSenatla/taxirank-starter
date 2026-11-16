@@ -10,7 +10,7 @@ final double fare = 18.50;
 Text('R ${(fare * passengers).toStringAsFixed(2)}');
 ```
 
-What breaks:
+What breaks: 
 
 The fix:
 
@@ -22,9 +22,9 @@ enum QueueStatus { waiting, loading, full }
 QueueStatus parse(String wire) => QueueStatus.values.byName(wire.toLowerCase());
 ```
 
-What breaks:
+What breaks: QueueStatus breaks
 
-The fix:
+The fix: QueueStatus FromWire instead of parse.
 
 ## 3
 
@@ -36,9 +36,9 @@ String label(QueueStatus s) => switch (s) {
 };
 ```
 
-What breaks:
+What breaks: the QueueStatus.loading => 'Loading'
 
-The fix:
+The fix: s.loading => 'Loading'
 
 ## 4
 
@@ -70,9 +70,12 @@ testWidgets('a failed load shows Try again', (tester) async {
 });
 ```
 
-What breaks:
+What breaks: await tester.pumpWidget(ProviderScope(
+    overrides: [repoProvider.overrideWithValue(FailsOnceRepo())],
+    child: const MaterialApp(home: QueueScreen()),
+  ));
 
-The fix:
+The fix: Removing that part.
 
 ## 6
 
@@ -82,9 +85,9 @@ onTap: () => Navigator.of(context).push(
 ),
 ```
 
-What breaks:
+What breaks: TaxiScreen(taxi: taxi)),
 
-The fix:
+The fix: Putting the page you're redirecting to
 
 ## 7
 
@@ -96,9 +99,9 @@ CircleAvatar(
 ),
 ```
 
-What breaks:
+What breaks:       ? const Color(0xFF2E7D32)
 
-The fix:
+The fix: putting a comma after the first color assignment.
 
 ## 8
 
