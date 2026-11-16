@@ -53,9 +53,9 @@ class CurrentQueue extends _$CurrentQueue {
 }
 ```
 
-What breaks:
+What breaks: Both routes share one state, so the marshal can see the previous route's taxis.
 
-The fix:
+The fix: Use a Riverpod keyed by each screen should watch its own route's provider instance.
 
 ## 5
 

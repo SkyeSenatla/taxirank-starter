@@ -1,58 +1,11 @@
-import 'package:taxirank/core/fakes/rank_server.dart';
-import 'package:taxirank/core/money/cents.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:taxirank/core/fakes/rank_server_provider.dart';
+import 'package:taxirank/features/queues/data/server_queue_repository.dart';
 import 'package:taxirank/features/queues/domain/queue_repository.dart';
-import 'package:taxirank/features/queues/domain/queue_status.dart';
-import 'package:taxirank/features/queues/domain/queued_taxi.dart';
-import 'package:taxirank/features/queues/domain/rank_route.dart';
-import 'package:taxirank/features/queues/domain/route_queue.dart';
 
-final class ServerQueueRepository implements QueueRepository {
-  const new(this.server);
+part 'queue_repository_provider.g.dart';
 
-  final RankServer server;
-
-  @override
-  Future<List<RankRoute>> fetchRoutes() async => [
-    for (final r in await server.getRoutes())
-      RankRoute(
-        id: r['id']! as String,
-        name: r['name']! as String,
-        fare: Cents(r['fareCents']! as int),
-        queueLength: r['queueLength']! as int,
-      ),
-  ];
-
-  @override
-  Future<RouteQueue> fetchQueue(String routeId) async {
-    final q = await server.getQueue(routeId);
-    return RouteQueue(
-      routeName: q['routeName']! as String,
-      routeId: q['routeId']! as String,
-      fare: Cents(q['fareCents']! as int),
-      capacity: q['capacity']! as int,
-      taxis: [
-        for (final t in q['taxis']! as List<Object?>)
-          taxiFromWire(t! as Map<String, Object?>),
-      ],
-    );
-  }
-
-  @override
-  Future<QueuedTaxi> board(String routeId, String taxiId) async =>
-      taxiFromWire(await server.board(routeId, taxiId));
-
-  @override
-  Future<void> depart(String routeId, String taxiId) async {
-    await server.depart(routeId, taxiId);
-  }
-
-  static QueuedTaxi taxiFromWire(Map<String, Object?> t) => QueuedTaxi(
-    id: t['id']! as String,
-    registration: t['registration']! as String,
-    driverName: t['driverName']! as String,
-    status: QueueStatus.fromWire(t['status']! as String),
-    seatsTaken: t['seatsTaken']! as int,
-    collected: Cents(t['collectedCents']! as int),
-    position: t['position']! as int,
-  );
-}
+/// The one place that names the queues implementation.
+@Riverpod(keepAlive: true)
+QueueRepository queueRepository(Ref ref) =>
+    ServerQueueRepository(ref.watch(rankServerProvider));

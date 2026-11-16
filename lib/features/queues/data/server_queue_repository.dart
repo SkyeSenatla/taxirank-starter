@@ -44,6 +44,11 @@ final class ServerQueueRepository implements QueueRepository {
   Future<QueuedTaxi> board(String routeId, String taxiId) async =>
       taxiFromWire(await server.board(routeId, taxiId));
 
+  @override
+  Future<void> depart(String routeId, String taxiId) async {
+    await server.depart(routeId, taxiId);
+  }
+
   /// One taxi from the server's wire form.
   static QueuedTaxi taxiFromWire(Map<String, Object?> t) => QueuedTaxi(
     id: t['id']! as String,
