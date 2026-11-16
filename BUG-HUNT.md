@@ -1,113 +1,33 @@
 # Bug hunt
 
-Eight short snippets, each with at least one bug from Week 10. For each, write
-**what breaks, and for whom**, and **the fix**, in a line each.
+## 1 — Floating-point money
+What breaks: repeated decimal arithmetic can introduce rounding errors in passenger fares and takings.
+The fix: store money as integer cents and format it only for display; use the server's returned totals.
 
-## 1
+## 2 — Unknown enum value
+What breaks: `byName` throws when the server adds a status such as `OffDuty`.
+The fix: map known wire strings explicitly and map every other value to `QueueStatus.unknown`.
 
-```dart
-final double fare = 18.50;
-Text('R ${(fare * passengers).toStringAsFixed(2)}');
-```
+## 3 — Wildcard status switch
+What breaks: a new status is silently presented as Waiting, misleading the marshal.
+The fix: add an explicit unknown case and make the switch exhaustive without a wildcard.
 
-What breaks:
+## 4 — Shared mutable queue
+What breaks: opening another route overwrites the first route's state; callers can also mutate public notifier properties.
+The fix: use a family keyed by route id and keep the id as the immutable family argument.
 
-The fix:
+## 5 — Failed load test
+What breaks: the test doesn't guarantee that the failed state is rendered before checking, and a retry path may never be exercised.
+The fix: pump the asynchronous state, assert the failure message and retry control, tap retry, then assert recovered data.
 
-## 2
+## 6 — Imperative taxi navigation
+What breaks: a pushed widget isn't addressable by a cold deep link and its whole taxi object is coupled to the caller.
+The fix: use a typed nested route containing routeId and taxiId; fetch the taxi from those ids.
 
-```dart
-enum QueueStatus { waiting, loading, full }
+## 7 — Literal status colours
+What breaks: feature colours cannot adapt consistently to light and dark themes and status is conveyed by colour alone.
+The fix: put status colours in a ThemeExtension and always show a text label.
 
-QueueStatus parse(String wire) => QueueStatus.values.byName(wire.toLowerCase());
-```
-
-What breaks:
-
-The fix:
-
-## 3
-
-```dart
-String label(QueueStatus s) => switch (s) {
-  QueueStatus.loading => 'Loading',
-  QueueStatus.full => 'Full',
-  _ => 'Waiting',
-};
-```
-
-What breaks:
-
-The fix:
-
-## 4
-
-```dart
-@Riverpod(keepAlive: true)
-class CurrentQueue extends _$CurrentQueue {
-  @override
-  Future<RouteQueue?> build() async => null;
-
-  Future<void> open(String routeId) async =>
-      state = AsyncData(await ref.read(repoProvider).fetchQueue(routeId));
-}
-```
-
-What breaks:
-
-The fix:
-
-## 5
-
-```dart
-testWidgets('a failed load shows Try again', (tester) async {
-  await tester.pumpWidget(ProviderScope(
-    overrides: [repoProvider.overrideWithValue(FailsOnceRepo())],
-    child: const MaterialApp(home: QueueScreen()),
-  ));
-  await tester.pumpAndSettle();
-  expect(find.text('Try again'), findsOneWidget);
-});
-```
-
-What breaks:
-
-The fix:
-
-## 6
-
-```dart
-onTap: () => Navigator.of(context).push(
-  MaterialPageRoute<void>(builder: (_) => TaxiScreen(taxi: taxi)),
-),
-```
-
-What breaks:
-
-The fix:
-
-## 7
-
-```dart
-CircleAvatar(
-  backgroundColor: taxi.status == QueueStatus.loading
-      ? const Color(0xFF2E7D32)
-      : const Color(0xFF9E9E9E),
-),
-```
-
-What breaks:
-
-The fix:
-
-## 8
-
-```yaml
-# .github/workflows/ci.yml, with riverpod_lint switched on in analysis_options.yaml
-      - name: Analyze
-        run: flutter analyze
-```
-
-What breaks:
-
-The fix:
+## 8 — Weak CI analysis
+What breaks: `flutter analyze` may not fail for infos, so configured Riverpod lint findings can pass CI.
+The fix: run `dart analyze --fatal-infos` after generation and before tests.

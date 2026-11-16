@@ -4,40 +4,36 @@ import 'package:taxirank/features/queues/domain/route_queue.dart';
 
 part 'selected_queue_controller.g.dart';
 
-/// The queue on screen. One for the whole app, loaded by whichever queue
-/// screen opens.
+/// One independently cached queue for each route id.
 @Riverpod(keepAlive: true)
 class SelectedQueue extends _$SelectedQueue {
-  /// The route that's on screen.
-  String? routeId;
-
   @override
-  Future<RouteQueue?> build() async => null;
+  Future<RouteQueue> build(String routeId) =>
+      ref.watch(queueRepositoryProvider).fetchQueue(routeId);
 
-  /// Loads [id]'s queue.
-  Future<void> load(String id) async {
-    routeId = id;
-    final queue = await ref.read(queueRepositoryProvider).fetchQueue(id);
-    state = AsyncData(queue);
-  }
-
-  /// One passenger boards [taxiId].
+  /// One passenger boards [taxiId]; the server supplies the updated totals.
   Future<void> board(String taxiId) async {
-    final queue = state.value!;
-    final updated = await ref
-        .read(queueRepositoryProvider)
-        .board(queue.routeId, taxiId);
-    state = AsyncData(
-      queue.copyWith(
+    final queue = state.asData?.value;
+    if (queue == null) return;
+    state = await AsyncValue.guard(() async {
+      final updated = await ref
+          .read(queueRepositoryProvider)
+          .board(routeId, taxiId);
+      return queue.copyWith(
         taxis: [
           for (final taxi in queue.taxis)
-            if (taxi.id == taxiId)
-              // Count the fare straight away, so the marshal sees it.
-              updated.copyWith(collected: updated.collected + queue.fare)
-            else
-              taxi,
+            if (taxi.id == taxiId) updated else taxi,
         ],
-      ),
-    );
+      );
+    });
+  }
+
+  /// A full taxi departs; the server determines the new queue order.
+  Future<void> depart(String taxiId) async {
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(queueRepositoryProvider);
+      await repository.depart(routeId, taxiId);
+      return repository.fetchQueue(routeId);
+    });
   }
 }

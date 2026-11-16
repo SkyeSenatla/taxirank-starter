@@ -4,6 +4,7 @@ import 'package:taxirank/app/router/app_shell.dart';
 import 'package:taxirank/features/departures/presentation/departures_screen.dart';
 import 'package:taxirank/features/queues/presentation/route_queue_screen.dart';
 import 'package:taxirank/features/queues/presentation/routes_screen.dart';
+import 'package:taxirank/features/queues/presentation/taxi_detail_screen.dart';
 
 part 'routes.g.dart';
 
@@ -14,7 +15,12 @@ part 'routes.g.dart';
       routes: [
         TypedGoRoute<QueuesRoute>(
           path: '/queues',
-          routes: [TypedGoRoute<RouteQueueRoute>(path: ':routeId')],
+          routes: [
+            TypedGoRoute<RouteQueueRoute>(
+              path: ':routeId',
+              routes: [TypedGoRoute<TaxiDetailRoute>(path: 'taxis/:taxiId')],
+            ),
+          ],
         ),
       ],
     ),
@@ -72,4 +78,19 @@ class DeparturesRoute extends GoRouteData with $DeparturesRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const DeparturesScreen();
+}
+
+/// One taxi's address: /queues/:routeId/taxis/:taxiId.
+class TaxiDetailRoute extends GoRouteData with $TaxiDetailRoute {
+  /// Creates the address from route and taxi ids only.
+  const TaxiDetailRoute({required this.routeId, required this.taxiId});
+
+  /// Parent queue id.
+  final String routeId;
+
+  /// Taxi id.
+  final String taxiId;
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      TaxiDetailScreen(routeId: routeId, taxiId: taxiId);
 }
