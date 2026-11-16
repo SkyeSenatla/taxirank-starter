@@ -10,9 +10,9 @@ final double fare = 18.50;
 Text('R ${(fare * passengers).toStringAsFixed(2)}');
 ```
 
-What breaks:
+What breaks: displaying the amount breaks, toStringAsFixed isn't correct  
 
-The fix:
+The fix: should be toDouble
 
 ## 2
 
